@@ -5,7 +5,6 @@ build
 coverage
 
 # Configurações e cache
-.env
 *.log
 *.lock
 .cache
@@ -16,9 +15,16 @@ coverage
 *.spec.ts
 jest.config.js
 test-results/
+tests
 
 # Arquivos temporários
 *.tmp
 *.bak
 .DS_Store
 Thumbs.db
+
+# Outros Arquivos/Pastas
+migrations
+scripts
+.git
+.gitignore
