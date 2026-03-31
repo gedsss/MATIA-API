@@ -6,6 +6,11 @@ import authenticate from './plugins/authPlugin.js'
 import swaggerUi from '@fastify/swagger-ui'
 import type { FastifyInstance, FastifyRegisterOptions } from 'fastify'
 import Fastify from 'fastify'
+
+// Carrega variáveis de ambiente ANTES de importar db.js
+import { config } from 'dotenv'
+config()
+
 // Importação da instância do Sequelize (já tipada)
 import sequelize from './db.js'
 import loginRoutes from './routes/loginRoutes.js'
@@ -18,6 +23,7 @@ import documentsTagsRoutes from './routes/documents_tagsRoutes.js'
 import documentsRoutes from './routes/documentsRoutes.js'
 import messagesRoutes from './routes/messagesRoutes.js'
 import chatRoutes from './routes/chatRoutes.js'
+import companyRoutes from './routes/companyRoutes.js'
 // Importações dos Módulos de Rotas (agora são arquivos .ts ou .js compilados)
 import profileRoutes from './routes/profileRoutes.js'
 import userActivityLogsRoutes from './routes/user_activity_logRoutes.js'
@@ -153,6 +159,9 @@ await fastify.register(swagger, {
 await fastify.register(chatRoutes, {
   prefix: '/api',
 } as FastifyRegisterOptions<FastifyInstance>)
+await fastify.register(companyRoutes, {
+  prefix: '/api/companies',
+} as FastifyRegisterOptions<FastifyInstance>)
 await fastify.register(profileRoutes, {
   prefix: '/api/profile',
 } as FastifyRegisterOptions<FastifyInstance>)
@@ -215,4 +224,4 @@ const start = async () => {
   }
 }
 
-start()
+await start()

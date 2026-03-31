@@ -7,7 +7,7 @@
     "migrate": "tsx scripts/runMigrations.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "node --loader ts-node/esm src/server.ts",
+    "dev": "tsx watch src/server.ts",
     "test": "vitest --run",
     "test:watch": "vitest",
     "coverage": "vitest --coverage"
@@ -54,7 +54,7 @@
     "sequelize-cli": "^6.6.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.20.6",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.16"
   }

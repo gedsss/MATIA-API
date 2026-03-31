@@ -24,6 +24,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: edson123
       POSTGRES_DB: matia
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

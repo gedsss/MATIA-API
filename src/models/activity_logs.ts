@@ -33,7 +33,7 @@ class ActivityLog
   public action!: 'login' | 'upload_document' | 'delete_user'
   public entity_id!: string | null
   public entity_type!: 'document' | 'user' | 'conversation' | null
-  public metadata!: Object | null
+  public metadata!: object | null
   public ip_address!: string | null
   public created_at!: Date
 }
