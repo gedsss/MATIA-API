@@ -1,19 +1,45 @@
-import { Transaction } from 'sequelize';
+import {Sequelize, Transaction} from 'sequelize';
 import  Company, {type CompanyCreationAttributes } from '../models/company.js';
 import type { CreateCompanyDTO, UpdateCompanyDTO } from '../dtos/CompanyDTO.js';
 
 export class CompanyRepository {
 
-    // 🔍 BUSCAR TODAS
+    // 🔍 BUSCAR TODAS COM CONTAGEM (Versão Dashboard)
     static async findAll(): Promise<Company[]> {
         return await Company.findAll({
+            attributes: {
+                include: [
+                    // 🌟 Injetamos um campo virtual chamado 'userCount'
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM profile AS p
+                            WHERE p.empresa_id = "Company".id
+                        )`),
+                        'usuarios_count'
+                    ]
+                ]
+            },
             order: [['name', 'ASC']]
         });
     }
 
-    // 🔍 BUSCAR POR ID
+    // 🔍 BUSCAR POR ID (Também com contagem, se quiser exibir no detalhe)
     static async findById(id: string): Promise<Company | null> {
-        return await Company.findByPk(id);
+        return await Company.findByPk(id, {
+            attributes: {
+                include: [
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM profile AS p
+                            WHERE p.empresa_id = "Company".id
+                        )`),
+                        'usuarios_count'
+                    ]
+                ]
+            }
+        });
     }
 
     // ➕ CRIAR (Sem 'any' e sem data manual!)

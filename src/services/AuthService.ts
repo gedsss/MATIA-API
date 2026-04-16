@@ -50,7 +50,7 @@ export class AuthService {
                 throw new UnauthorizedError('Configuração 2FA não encontrada');
             }
             const cleanToken = String(token2fa).trim();
-            // Valida com o token limpo
+
             const isValid = this.verifyTOTP(cleanToken, user.two_factor_secret, user.email);
 
             if (!isValid) throw new UnauthorizedError('Código 2FA inválido ou expirado');
@@ -63,8 +63,8 @@ export class AuthService {
         }
     }
 
-    // 3. SETUP: Gerar Secret e QR Code
-    static async setup2FA(userId: string, empresaId: string, email: string): Promise<{ qrCodeDataUrl: string, secret: string }> {
+    // 3. SETUP: Gerar Secret e QR Code (🌟 INJETADO ROLE E TIPAGEM NULL)
+    static async setup2FA(userId: string, role: string, empresaId: string | null, email: string): Promise<{ qrCodeDataUrl: string, secret: string }> {
         const secret = new OTPAuth.Secret({ size: 20 }).base32;
         const totp = new OTPAuth.TOTP({
             issuer: 'Matia SaaS',
@@ -72,20 +72,19 @@ export class AuthService {
             algorithm: 'SHA1',
             digits: 6,
             period: 30,
-            secret: OTPAuth.Secret.fromBase32(secret), // 🔥 CORRETO
+            secret: OTPAuth.Secret.fromBase32(secret),
         });
 
         const qrCodeDataUrl = await QRCode.toDataURL(totp.toString());
 
-        await UserRepository.update(userId, empresaId, { two_factor_secret: secret } as any);
+        await UserRepository.update(userId, role, empresaId, { two_factor_secret: secret } as any);
 
         return { qrCodeDataUrl, secret };
     }
 
-    // 4. CONFIRMAÇÃO: Ativar o 2FA definitivamente
-    static async confirm2FA(userId: string, empresaId: string, token: string): Promise<{ message: string }> {
-        // 1. Forçamos o 'attributes' para garantir que a secret venha, ignorando o exclude do model
-        const userInstance = await UserRepository.findByIdWithSecret(userId, empresaId);
+    // 4. CONFIRMAÇÃO: Ativar o 2FA definitivamente (🌟 INJETADO ROLE E TIPAGEM NULL)
+    static async confirm2FA(userId: string, role: string, empresaId: string | null, token: string): Promise<{ message: string }> {
+        const userInstance = await UserRepository.findByIdWithSecret(userId, role, empresaId);
 
         if (!userInstance) {
             throw new InternalServerError('Usuário não encontrado.');
@@ -101,13 +100,14 @@ export class AuthService {
 
         if (!isValid) throw new UnauthorizedError('Código de confirmação inválido.');
 
-        await UserRepository.update(userId, empresaId, { two_factor_enabled: true } as any);
+        await UserRepository.update(userId, role, empresaId, { two_factor_enabled: true } as any);
 
         return { message: '2FA ativado com sucesso!' };
     }
-    // 5. DESATIVAR: Remover proteção 2FA
-    static async disable2FA(userId: string, empresaId: string, token: string): Promise<{ message: string }> {
-        const userInstance = await UserRepository.findById(userId, empresaId);
+
+    // 5. DESATIVAR: Remover proteção 2FA (🌟 INJETADO ROLE E TIPAGEM NULL)
+    static async disable2FA(userId: string, role: string, empresaId: string | null, token: string): Promise<{ message: string }> {
+        const userInstance = await UserRepository.findById(userId, role, empresaId);
 
         if (!userInstance || !userInstance.two_factor_secret) {
             throw new UnauthorizedError('Usuário não encontrado ou 2FA não configurado');
@@ -118,7 +118,7 @@ export class AuthService {
 
         if (!isValid) throw new UnauthorizedError('Código inválido. Não foi possível desativar.');
 
-        await UserRepository.update(userId, empresaId, {
+        await UserRepository.update(userId, role, empresaId, {
             two_factor_enabled: false,
             two_factor_secret: null
         } as any);
@@ -126,16 +126,13 @@ export class AuthService {
         return { message: '2FA desativado.' };
     }
 
-    // 6. STATUS
-    static async get2FAStatus(userId: string, empresaId: string): Promise<{ enabled: boolean }> {
-        const user = await UserRepository.findById(userId, empresaId);
+    // 6. STATUS (🌟 INJETADO ROLE E TIPAGEM NULL)
+    static async get2FAStatus(userId: string, role: string, empresaId: string | null): Promise<{ enabled: boolean }> {
+        const user = await UserRepository.findById(userId, role, empresaId);
         return { enabled: !!user?.two_factor_enabled };
     }
 
-
-
     private static verifyTOTP(token: string, secret: string, email: string): boolean {
-
         const totp = new OTPAuth.TOTP({
             issuer: 'Matia SaaS',
             label: email,
@@ -146,7 +143,6 @@ export class AuthService {
         });
 
         const delta = totp.validate({ token, window: 2 });
-        console.log(`[DEBUG 2FA] Delta: ${delta}`); // Se for null, não validou.
         return delta !== null;
     }
 

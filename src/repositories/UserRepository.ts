@@ -1,3 +1,4 @@
+import { Op } from 'sequelize'; // 🌟 IMPORTANTE: Importação dos operadores do Sequelize
 import type { Transaction } from 'sequelize';
 import Profile from '../models/profile.js';
 import type { ProfileAttributes, ProfileCreationAttributes } from '../models/profile.js';
@@ -5,16 +6,33 @@ import type { CreateUserDTO, UpdateUserDTO } from '../dtos/UserDTO.js';
 
 export class UserRepository {
 
-    static async findAllByEmpresa(empresaId: string): Promise<Profile[]> {
+    // 1. 🌟 LISTAGEM INTELIGENTE (Raio-X do SUPER-ADMIN)
+    static async findAllUsers(role: string, empresaId: string | null): Promise<Profile[]> {
+        const queryWhere: any = {};
+
+        if (role !== 'SUPER-ADMIN') {
+            // Se não for o dono do sistema, tranca o usuário na própria empresa
+            queryWhere.empresa_id = empresaId;
+            // E garante que ele nunca veja quem são os SUPER-ADMINS
+            queryWhere.role = { [Op.ne]: 'SUPER-ADMIN' };
+        }
+
         return await Profile.findAll({
-            where: { empresa_id: empresaId },
+            where: queryWhere,
             order: [['nome', 'ASC']]
         });
     }
 
-    static async findByIdAndEmpresa(id: string, empresaId: string): Promise<Profile | null> {
+    // 2. 🌟 BUSCA POR ID INTELIGENTE
+    static async findByIdAndEmpresa(id: string, role: string, empresaId: string | null): Promise<Profile | null> {
+        const queryWhere: any = { id };
+
+        if (role !== 'SUPER-ADMIN') {
+            queryWhere.empresa_id = empresaId;
+        }
+
         return await Profile.findOne({
-            where: { id, empresa_id: empresaId }
+            where: queryWhere
         });
     }
 
@@ -25,77 +43,87 @@ export class UserRepository {
         });
     }
 
-
     static async create(data: CreateUserDTO, transaction?: Transaction): Promise<Profile> {
-        // 1. Tratamento da data para evitar erro de fuso horário/formato
         const dataNascimento = data.data_nascimento ? new Date(data.data_nascimento) : null;
 
-        // 2. Montamos o objeto garantindo que o vínculo da empresa está presente
         const profileData = {
             ...data,
             data_nascimento: dataNascimento,
             profile_password: data.profile_password,
-            // Forçamos o mapeamento do empresa_id para garantir que o Sequelize veja a coluna
             empresa_id: data.empresa_id
         };
 
-        // 3. Executamos o Create com 'as any' para evitar erro de tipagem TS2345
-        // E usamos returning: true para o Postgres devolver o objeto completo
         return await Profile.create(profileData as any, {
             transaction,
             returning: true
         });
     }
-    static async update(id: string, empresaId: string, data: UpdateUserDTO): Promise<Profile | null> {
+
+    // 3. 🌟 UPDATE INTELIGENTE
+    static async update(id: string, role: string, empresaId: string | null, data: UpdateUserDTO): Promise<Profile | null> {
         const updatePayload: any = { ...data };
-        // 🚨 O Ponto Crítico: Se o Angular mandou uma string de data, convertemos para Date
+
         if (data.data_nascimento) {
             updatePayload.data_nascimento = new Date(data.data_nascimento);
         }
+
+        const queryWhere: any = { id };
+
+        if (role !== 'SUPER-ADMIN') {
+            queryWhere.empresa_id = empresaId;
+        }
+
         const [affectedRows] = await Profile.update(updatePayload, {
-            where: { id, empresa_id: empresaId }
+            where: queryWhere
         });
+
         if (affectedRows === 0) return null;
-        return this.findByIdAndEmpresa(id, empresaId);
+        return this.findByIdAndEmpresa(id, role, empresaId);
     }
 
-    // Método exclusivo para Auth/2FA (ignora as restrições do Model para pegar dados sensíveis)
     static async findByIdForAuth(id: string): Promise<Profile | null> {
         return await Profile.unscoped().findOne({
             where: { id }
         });
     }
 
-    static async delete(id: string, empresaId: string): Promise<number> {
+    // 4. 🌟 DELETE INTELIGENTE
+    static async delete(id: string, role: string, empresaId: string | null): Promise<number> {
+        const queryWhere: any = { id };
+
+        if (role !== 'SUPER-ADMIN') {
+            queryWhere.empresa_id = empresaId;
+        }
+
         return await Profile.destroy({
-            where: { id, empresa_id: empresaId }
+            where: queryWhere
         });
     }
 
     static async updateLastAccess(id: string): Promise<void> {
         await Profile.update(
-            { ultimo_acesso: new Date() }, // Valor novo
+            { ultimo_acesso: new Date() },
             { where: { id } }
         );
     }
 
-// 1. Busca padrão por ID e Empresa (Segurança Multi-tenant)
-    static async findById(id: string, empresaId: string) {
-        // O .unscoped() força o Sequelize a trazer o two_factor_secret que está escondido
+    // 5. 🌟 BUSCA DESCOBERTA (2FA e Permissões) INTELIGENTE
+    static async findById(id: string, role: string, empresaId: string | null) {
+        const queryWhere: any = { id };
+        if (role !== 'SUPER-ADMIN') queryWhere.empresa_id = empresaId;
+
         return await Profile.unscoped().findOne({
-            where: {
-                id: id,
-                empresa_id: empresaId
-            }
+            where: queryWhere
         });
     }
 
-    static async findByIdWithSecret(id: string, empresaId: string) {
+    static async findByIdWithSecret(id: string, role: string, empresaId: string | null) {
+        const queryWhere: any = { id };
+        if (role !== 'SUPER-ADMIN') queryWhere.empresa_id = empresaId;
+
         return await Profile.unscoped().findOne({
-            where: { id, empresa_id: empresaId },
-            attributes: { include: ['two_factor_secret'] } // Força a inclusão mesmo que o scope exclua
+            where: queryWhere,
+            attributes: { include: ['two_factor_secret'] }
         });
     }
-
-
 }

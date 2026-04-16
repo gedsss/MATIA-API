@@ -40,7 +40,8 @@ export class AuthController {
         const user = (request as any).user; // Injetado pelo middleware JWT
         const { email } = request.body as { email: string };
 
-        const result = await AuthService.setup2FA(user.id, user.empresa_id, email || 'Usuário MATIA');
+        // 🌟 CABO CONECTADO: Passando user.role
+        const result = await AuthService.setup2FA(user.id, user.role, user.empresa_id, email || 'Usuário MATIA');
 
         return reply.status(200).send({
             success: true,
@@ -57,14 +58,17 @@ export class AuthController {
             return reply.status(400).send({ success: false, message: 'O código de 6 dígitos é obrigatório' });
         }
 
-        const result = await AuthService.confirm2FA(user.id, user.empresa_id, token);
+        // 🌟 CABO CONECTADO: Passando user.role
+        const result = await AuthService.confirm2FA(user.id, user.role, user.empresa_id, token);
         return reply.status(200).send({ success: true, ...result });
     }
 
     // 5. STATUS: Verifica se o 2FA está ativo (Para o Angular saber o que exibir)
     static async get2FAStatus(request: FastifyRequest, reply: FastifyReply) {
         const user = (request as any).user;
-        const result = await AuthService.get2FAStatus(user.id, user.empresa_id);
+
+        // 🌟 CABO CONECTADO: Passando user.role
+        const result = await AuthService.get2FAStatus(user.id, user.role, user.empresa_id);
 
         return reply.status(200).send({ success: true, ...result });
     }
@@ -74,7 +78,8 @@ export class AuthController {
         const user = (request as any).user;
         const { token } = request.body as { token: string };
 
-        const result = await AuthService.disable2FA(user.id, user.empresa_id, token);
+        // 🌟 CABO CONECTADO: Passando user.role
+        const result = await AuthService.disable2FA(user.id, user.role, user.empresa_id, token);
         return reply.status(200).send({ success: true, ...result });
     }
 
