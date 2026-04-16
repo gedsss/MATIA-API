@@ -150,7 +150,8 @@ export class AuthService {
         return delta !== null;
     }
 
-    private static generateFinalTokens(user: any): LoginResponseDTO {
+    private static async generateFinalTokens(user: any): Promise<LoginResponseDTO> {
+        await UserRepository.updateLastAccess(user.id);
         const token = jwt.sign(
             { id: user.id, empresa_id: user.empresa_id, role: user.role },
             process.env.JWT_SECRET || 'secret_key',

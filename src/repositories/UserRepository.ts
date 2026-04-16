@@ -72,7 +72,12 @@ export class UserRepository {
         });
     }
 
-    // No seu UserRepository.ts
+    static async updateLastAccess(id: string): Promise<void> {
+        await Profile.update(
+            { ultimo_acesso: new Date() }, // Valor novo
+            { where: { id } }
+        );
+    }
 
 // 1. Busca padrão por ID e Empresa (Segurança Multi-tenant)
     static async findById(id: string, empresaId: string) {

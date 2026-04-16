@@ -51,6 +51,34 @@ export class ProfileController {
       data: usuario
     });
   }
+ //Pega usuário logado
+  static async getSelf(request: FastifyRequest, reply: FastifyReply) {
+    const { id, empresa_id } = (request as any).user;
+    const perfil = await ProfileService.obterMeuPerfil(id, empresa_id);
+    return reply.status(200).send(perfil);
+  }
+
+  static async atualizarSelf(request: FastifyRequest, reply: FastifyReply) {
+    try {
+      // 1. Pegamos o ID e Empresa diretamente do Token decodificado pelo Fastify
+      const { id, empresa_id } = request.user as { id: string; empresa_id: string };
+      const data = request.body as UpdateUserDTO;
+
+      // 2. Chamamos o mesmo Service de atualização, mas com os dados do Token
+      const atualizado = await ProfileService.atualizar(id, empresa_id, data);
+
+      return reply.send({
+        success: true,
+        message: 'Seu perfil foi atualizado com sucesso.',
+        data: atualizado
+      });
+    } catch (error: any) {
+      return reply.status(400).send({
+        success: false,
+        message: error.message || 'Erro ao atualizar perfil.'
+      });
+    }
+  }
 
   /**
    * 📝 ATUALIZAR

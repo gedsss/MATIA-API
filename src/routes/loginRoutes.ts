@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { loginSchema } from "../schemas/authSchema.js";
 import { AuthController } from "../controllers/AuthController.js";
+import {ProfileController} from "@/controllers/ProfileController.js";
 
 const loginRoutes = async (fastify: FastifyInstance) => {
 

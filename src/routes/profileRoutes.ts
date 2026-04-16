@@ -7,8 +7,50 @@ import {
     profileParamsSchema,
     updateProfileSchema,
 } from '../schemas/profileSchema.js'
+import {AuthController} from "@/controllers/AuthController.js";
 
 const profileRoutes = async (fastify: FastifyInstance) => {
+    // 1. PRIMEIRO: A rota estática /me (O "Eu" profissional)
+    fastify.get(
+        '/me',
+        {
+            schema: {
+                tags: ['Profile'],
+                summary: 'Obtém os dados completos do utilizador logado (via Token)',
+                // ... seu schema de response
+            },
+            preHandler: [fastify.authenticate],
+        },
+        ProfileController.getSelf
+    )
+    // Essa é a rota que o seu botão "Salvar" no Angular vai usar!
+    fastify.put(
+        '/me',
+        {
+            schema: {
+                tags: ['Profile'],
+                summary: 'Atualiza os dados do utilizador logado (via Token)',
+                body: updateProfileSchema.body, // Usa o schema de validação que você já tem
+            },
+            preHandler: [fastify.authenticate],
+        },
+        ProfileController.atualizarSelf // O novo método que criamos no Controller
+    )
+
+    // 2. DEPOIS: A rota dinâmica /:id
+    fastify.get(
+        '/:id',
+        {
+            schema: {
+                tags: ['Profile'],
+                summary: 'Busca um usuário pelo seu ID',
+                // ...
+            },
+            preHandler: [fastify.authenticate],
+        },
+        ProfileController.buscar
+    )
+
     // ROTA POST / (Criação)
     fastify.post(
         '/',
@@ -28,20 +70,6 @@ const profileRoutes = async (fastify: FastifyInstance) => {
             },
         },
         ProfileController.criar // Usando o método da nova classe
-    )
-
-    // ROTA GET /:id (Busca)
-    fastify.get(
-        '/:id',
-        {
-            schema: {
-                tags: ['Profile'],
-                summary: 'Busca um usuário pelo seu ID (somente da mesma empresa)',
-                params: profileParamsSchema.params,
-            },
-            preHandler: [fastify.authenticate],
-        },
-        ProfileController.buscar
     )
 
     // ROTA GET / (Lista)

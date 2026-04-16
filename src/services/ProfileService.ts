@@ -98,4 +98,18 @@ export class ProfileService {
         const rows = await UserRepository.delete(id, empresaId);
         if (rows === 0) throw new UserNotFoundError();
     }
+
+
+     // 👤 BUSCAR MEU PERFIL (Rota /me)
+
+    static async obterMeuPerfil(userId: string, empresaId: string): Promise<UserResponseDTO & { two_factor_enabled: boolean }> {
+        const usuario = await UserRepository.findById(userId, empresaId);
+        if (!usuario) throw new UserNotFoundError();
+        const response = this.mapToResponseDTO(usuario);
+        // O status do 2FA para o card do Angular
+        return {
+            ...response,
+            two_factor_enabled: !!(usuario as any).two_factor_secret
+        };
+    }
 }
