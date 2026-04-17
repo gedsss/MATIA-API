@@ -80,7 +80,8 @@ await fastify.register(cors, {
     'http://localhost:3000',
     'http://localhost:5173',
     'http://103.204.193.6',        // Frontend na porta 80 da VPS
-    'http://103.204.193.6:80',     // Garantia para porta 80 explícita
+    'http://103.204.193.6:80',
+    'http://103.204.193.6:42502',// Garantia para porta 80 explícita
     'https://matia-legal-ai.vercel.app',
     'https://www.matia.com.br',
   ],
