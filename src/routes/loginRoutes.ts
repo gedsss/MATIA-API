@@ -23,6 +23,35 @@ const loginRoutes = async (fastify: FastifyInstance) => {
         },
         AuthController.login
     )
+    // ROTA DE REFRESH TOKEN
+    fastify.post(
+        '/refresh',
+        {
+            schema: {
+                tags: ['Auth'],
+                summary: 'Renova o access token utilizando o refreshToken presente nos cookies',
+                // Não precisamos de body schema aqui, pois o dado vem do Cookie
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            success: { type: 'boolean' },
+                            message: { type: 'string' },
+                            token: { type: 'string' }, // O novo Access Token de 15 min
+                            user: { type: 'object', additionalProperties: true }
+                        }
+                    }
+                }
+            },
+            config: {
+                rateLimit: {
+                    max: 10, // Um pouco mais generoso que o login
+                    timeWindow: '15 minutes',
+                },
+            },
+        },
+        AuthController.refreshToken
+    )
 
     // 2. LOGIN FASE 2: Validação TOTP (6 dígitos)
     fastify.post(
@@ -116,6 +145,81 @@ const loginRoutes = async (fastify: FastifyInstance) => {
         AuthController.disable2FA
     )
 
+    // Rota: Solicitar Recuperação de Senha
+    fastify.post(
+        '/forgot-password',
+        {
+            schema: {
+                tags: ['Auth'],
+                summary: 'Envia e-mail com token de recuperação de senha',
+                body: {
+                    type: 'object',
+                    required: ['email'],
+                    properties: {
+                        email: { type: 'string', format: 'email' }
+                    }
+                },
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            success: { type: 'boolean' },
+                            message: { type: 'string' }
+                        }
+                    }
+                }
+            },
+            config: {
+                rateLimit: {
+                    max: 3, // Mais restrito que o login por segurança
+                    timeWindow: '15 minutes',
+                },
+            },
+        },
+        AuthController.forgotPassword
+    );
+
+// Rota: Resetar a Senha (Efetivar a troca)
+    fastify.post(
+        '/reset-password',
+        {
+            schema: {
+                tags: ['Auth'],
+                summary: 'Redefine a senha do usuário utilizando o token enviado por e-mail',
+                body: {
+                    type: 'object',
+                    required: ['token', 'newPassword'],
+                    properties: {
+                        token: { type: 'string' },
+                        newPassword: { type: 'string', minLength: 6 }
+                    }
+                }
+            }
+        },
+        AuthController.resetPassword
+    );
+
+    // authRoutes.ts (Dentro do escopo autenticado)
+
+    fastify.post(
+        '/change-password',
+        {
+            schema: {
+                tags: ['Auth'],
+                summary: 'Altera a senha do usuário logado',
+                body: {
+                    type: 'object',
+                    required: ['currentPassword', 'newPassword'],
+                    properties: {
+                        currentPassword: { type: 'string' },
+                        newPassword: { type: 'string', minLength: 6 }
+                    }
+                }
+            },
+            onRequest: [fastify.authenticate]
+        },
+        AuthController.changePassword
+    );
     // 7. LOGOUT
     fastify.post(
         '/logout',

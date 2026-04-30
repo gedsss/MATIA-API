@@ -126,4 +126,18 @@ export class UserRepository {
             attributes: { include: ['two_factor_secret'] }
         });
     }
+
+    static async updateRefreshToken(id: string, role: string, empresaId: string | null, token: string | null): Promise<void> {
+        const queryWhere: any = { id };
+
+        // Se não for super-admin, aplica a busca por id da empresa
+        if (role !== 'SUPER-ADMIN') {
+            queryWhere.empresa_id = empresaId;
+        }
+
+        await Profile.update(
+            { refresh_token: token } as any,
+            { where: queryWhere }
+        );
+    }
 }

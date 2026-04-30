@@ -11,6 +11,7 @@ export interface ProfileAttributes {
     telefone: string
     data_nascimento: Date
     avatar_url: string | null
+
     nome: string
     email: string
 
@@ -24,6 +25,10 @@ export interface ProfileAttributes {
     // ✅ NOVOS CAMPOS PARA O 2FA
     two_factor_secret?: string | null
     two_factor_enabled?: boolean
+
+    refresh_token?: string | null
+    password_reset_token?: string | null;
+    password_reset_expires?: Date | null;
 }
 
 export interface ProfileCreationAttributes
@@ -41,6 +46,9 @@ export interface ProfileCreationAttributes
         | 'permissoes'
         | 'two_factor_secret' // ✅ Opcional na criação
         | 'two_factor_enabled' // ✅ Opcional na criação
+        | 'refresh_token'
+        | 'password_reset_token'
+        | 'password_reset_expires'
     > {}
 
 class Profile
@@ -68,6 +76,9 @@ class Profile
     // ✅ Implementação na Classe
     declare public two_factor_secret: string | null
     declare public two_factor_enabled: boolean
+    declare public refresh_token: string | null
+    declare public password_reset_token: string | null
+    declare public password_reset_expires: Date | null
 }
 
 Profile.init(
@@ -159,6 +170,18 @@ Profile.init(
             type: DataTypes.BOOLEAN,
             allowNull: false,
             defaultValue: false, // Por padrão, o 2FA vem desativado
+        },
+        refresh_token: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
+        password_reset_token: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+        },
+        password_reset_expires: {
+            type: DataTypes.DATE,
+            allowNull: true,
         }
     },
     {
@@ -171,7 +194,7 @@ Profile.init(
         // ✅ PROTEÇÃO ATIVADA: Esconde a senha e a chave secreta de consultas normais!
         defaultScope: {
             attributes: {
-                exclude: ['profile_password', 'two_factor_secret'],
+                exclude: ['profile_password', 'two_factor_secret', 'refresh_token', 'password_reset_token'],
             },
         },
     }

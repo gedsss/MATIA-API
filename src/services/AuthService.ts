@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'; // Para o token do e-mail
 import { UserRepository } from '../repositories/UserRepository.js';
 import type { LoginRequestDTO, LoginResponseDTO } from '../dtos/AuthDTO.js';
 import { UnauthorizedError, InternalServerError, InvalideCredentialsError } from '../errors/errors.js';
@@ -5,6 +6,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import QRCode from 'qrcode';
 import * as OTPAuth from 'otpauth';
+import Profile from "@/models/profile.js";
+import {MailService} from "@/services/MailService.js";
+import {Op} from "sequelize";
 
 export class AuthService {
 
@@ -145,17 +149,36 @@ export class AuthService {
         const delta = totp.validate({ token, window: 2 });
         return delta !== null;
     }
-
     private static async generateFinalTokens(user: any): Promise<LoginResponseDTO> {
+        // Atualiza o último acesso (mantendo sua lógica original)
         await UserRepository.updateLastAccess(user.id);
+
+        const payload = {
+            id: user.id,
+            empresa_id: user.empresa_id,
+            role: user.role
+        };
+
+        // Access Token: Curto (15 minutos) - O Front-end usa no Header
         const token = jwt.sign(
-            { id: user.id, empresa_id: user.empresa_id, role: user.role },
+            payload,
             process.env.JWT_SECRET || 'secret_key',
-            { expiresIn: '8h' }
+            { expiresIn: '15m' }
         );
+
+        // Refresh Token: Longo (7 dias) - O navegador guarda no Cookie
+        const refreshToken = jwt.sign(
+            payload,
+            process.env.JWT_REFRESH_SECRET || 'refresh_secret_key',
+            { expiresIn: '7d' }
+        );
+
+        // Salva o Refresh Token no banco de dados
+        await UserRepository.updateRefreshToken(user.id, user.role, user.empresa_id, refreshToken);
 
         return {
             token,
+            refreshToken, // Retorna para o Controller criar o Cookie
             user: {
                 id: user.id,
                 nome: user.nome,
@@ -165,6 +188,111 @@ export class AuthService {
                 avatar_url: user.avatar_url
             }
         };
+    }
+
+    // 2. VALIDAÇÃO E RENOVAÇÃO DO TOKEN (Adicione esta nova função)
+    static async refreshAccessToken(tokenFromCookie: string): Promise<LoginResponseDTO> {
+        if (!tokenFromCookie) {
+            throw new Error('Refresh token não fornecido. Faça login novamente.');
+        }
+
+        try {
+            // 1. Verifica se a assinatura do token é válida e se ele não expirou (matemática do JWT)
+            const decoded = jwt.verify(
+                tokenFromCookie,
+                process.env.JWT_REFRESH_SECRET || 'refresh_secret_key'
+            ) as any;
+
+            // 2. Busca o usuário no banco usando os dados do payload
+            // O seu método findById usa .unscoped(), então ele já traz o refresh_token oculto
+            const userInstance = await UserRepository.findById(decoded.id, decoded.role, decoded.empresa_id);
+
+            if (!userInstance) {
+                throw new Error('Usuário não encontrado.');
+            }
+
+            const user = userInstance.get({ plain: true });
+
+            // 3. A VERIFICAÇÃO DE OURO: O token do cookie bate exatamente com o do banco?
+            if (user.refresh_token !== tokenFromCookie) {
+                throw new Error('Sessão inválida ou revogada. Faça login novamente.');
+            }
+
+            // 4. Tudo válido! Gera novos tokens (renovando por mais 15m e 7d) e atualiza o banco
+            return await this.generateFinalTokens(user);
+
+        } catch (error) {
+            // Cai aqui se o token passou dos 7 dias, foi adulterado, ou se os checks acima falharem
+            throw new Error('Sessão expirada ou inválida. Faça login novamente.');
+        }
+    }
+
+    static async forgotPassword(email: string) {
+        const user = await Profile.findOne({ where: { email } });
+        if (!user) return { message: 'Se o e-mail existir, um link de recuperação foi enviado.' };
+
+        // 1. Gera o token (O que estava dando erro de types)
+        const token = crypto.randomBytes(32).toString('hex');
+        const expires = new Date();
+        expires.setHours(expires.getHours() + 1);
+
+        // 2. Salva no banco
+        await user.update({
+            password_reset_token: token,
+            password_reset_expires: expires
+        });
+
+        // 3. Envia o e-mail
+        await MailService.sendPasswordResetEmail(user.email, token);
+
+        return { message: 'Se o e-mail existir, um link de recuperação foi enviado.' };
+    }
+
+    static async resetPassword(token: string, newPassword: string) {
+        // 1. Busca o usuário pelo token e verifica se não expirou
+        const user = await Profile.findOne({
+            where: {
+                password_reset_token: token,
+                password_reset_expires: { [Op.gt]: new Date() } // Op.gt = Maior que agora
+            }
+        });
+
+        if (!user) throw new Error('Token inválido ou expirado.');
+
+        // 2. Gera o Hash da nova senha com bcryptjs
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // 3. Atualiza a senha e limpa o token
+        await user.update({
+            profile_password: hashedPassword,
+            password_reset_token: null,
+            password_reset_expires: null
+        });
+
+        return { message: 'Senha alterada com sucesso!' };
+    }
+
+   //altera a senha com usuário logado
+    static async changePassword(userId: string, currentPassword: string, newPassword: string) {
+        // 1. Busca o usuário pelo ID
+        const user = await Profile.unscoped().findByPk(userId);
+        if (!user) throw new Error('Usuário não encontrado.');
+
+        // 2. Verifica se a senha atual está correta
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.profile_password);
+        if (!isPasswordValid) throw new Error('A senha atual está incorreta.');
+
+        // 3. Gera o hash da nova senha
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // 4. Atualiza no banco
+        await user.update({
+            profile_password: hashedPassword
+        });
+
+        return { message: 'Senha alterada com sucesso!' };
     }
 
     static async logout(): Promise<{ message: string }> {

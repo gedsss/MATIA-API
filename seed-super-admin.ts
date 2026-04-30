@@ -8,29 +8,36 @@ async function seedSuperAdmin() {
         await sequelize.authenticate();
         console.log('✅ Conexão com o banco estabelecida.');
 
-        const emailSuperAdmin = 'roberta.vilella@oudtecnologia.com.br';
+        const emailSuperAdmin = 'isconaifa@hotmail.com';
 
         // 2. Verifica se o SUPER-ADMIN já existe para não duplicar
         const existe = await Profile.unscoped().findOne({ where: { email: emailSuperAdmin } });
 
         if (existe) {
-            console.log('⚠️ SUPER-ADMIN já existe no banco. Cancelando a criação.');
+            console.log('⚠️ Usuário já existe. Atualizando para SUPER-ADMIN...');
+
+            await existe.update({
+                role: 'SUPER-ADMIN',
+                empresa_id: null
+            });
+
+            console.log('🚀 Usuário promovido a SUPER-ADMIN!');
             process.exit(0);
         }
 
         // 3. Criptografa a senha fortíssima (O salt '10' é o padrão de mercado)
-        const senhaTextoPlano = 'RoVilella@2026';
+        const senhaTextoPlano = '800210101';
         const senhaHash = await bcrypt.hash(senhaTextoPlano, 10);
 
         // 4. Injeta o usuário no banco
         //Comando: npx tsx seed-super-admin.ts
         //ou docker exec -it matia-api-server-1 npx tsx seed-super-admin.ts
         await Profile.create({
-            nome: 'Roberta Vilella',
+            nome: 'Ricky Van Wolfswinkel',
             email: emailSuperAdmin,
-            cpf: '09483740194', // Coloque um CPF válido ou uma máscara se o banco exigir
-            telefone: '77904904348',
-            data_nascimento: new Date('2000-06-09'), // Data genérica
+            cpf: '09483771774', // Coloque um CPF válido ou uma máscara se o banco exigir
+            telefone: '77904474348',
+            data_nascimento: new Date('2010-11-09'), // Data genérica
             profile_password: senhaHash,
             role: 'SUPER-ADMIN',
             empresa_id: null, // O segredo da onipresença!

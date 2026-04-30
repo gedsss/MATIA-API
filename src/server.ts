@@ -2,6 +2,7 @@ import './init.js';
 import cors from '@fastify/cors'
 import swagger from '@fastify/swagger'
 import fastifyEnv from '@fastify/env'
+import cookie from '@fastify/cookie';
 import { rateLimitPlugin } from './plugins/ratelimit.js'
 import authenticate from './plugins/authPlugin.js'
 import swaggerUi from '@fastify/swagger-ui'
@@ -51,17 +52,33 @@ await fastify.register(fastifyEnv, {
     type: 'object',
     required: [
       'JWT_SECRET',
+      'JWT_REFRESH_SECRET',
+      'COOKIE_SECRET',
       'DB_HOST',
       'DB_NAME',
       'DB_USER',
       'DB_PASS',
+      'MAIL_HOST',
+      'MAIL_PORT',
+      'MAIL_USER',
+      'MAIL_PASS',
       'OPEN_API_KEY',
     ],
     properties: {
       JWT_SECRET: { type: 'string' },
+      JWT_REFRESH_SECRET: { type: 'string' },
+      COOKIE_SECRET: { type: 'string' },
+      MAIL_HOST: { type: 'string' },
+      MAIL_PORT: { type: 'string' },
+      MAIL_USER: { type: 'string' },
+      MAIL_PASS: { type: 'string' },
     },
   },
   dotenv: true,
+})
+await fastify.register(cookie, {
+  secret: process.env.COOKIE_SECRET,
+  hook: 'onRequest'
 })
 
 await fastify.register(helmetPlugin)
@@ -91,7 +108,9 @@ await fastify.register(cors, {
   maxAge: 86400,
 })
 
-// --- SWAGGER/OPENAPI (AJUSTADO PARA VPS) ---
+// --- SWAGGER/OPENAPI ---
+const isProduction = process.env.NODE_ENV === 'production';
+
 await fastify.register(swagger, {
   openapi: {
     info: {
@@ -101,17 +120,28 @@ await fastify.register(swagger, {
     },
     servers: [
       {
-        url: 'http://103.204.193.6:3002',
-        description: 'Servidor de Produção (VPS)',
+        url: isProduction ? 'http://103.204.193.6:3002' : 'http://localhost:3002',
+        description: isProduction ? 'Servidor de Produção (VPS)' : 'Ambiente Local',
       },
       {
-        url: 'http://localhost:3002',
-        description: 'Ambiente Local',
-      },
+        url: isProduction ? 'http://localhost:3002' : 'http://103.204.193.6:3002',
+        description: isProduction ? 'Ambiente Local' : 'Servidor de Produção (VPS)',
+      }
     ],
-    // ... restante das tags e components (mantidos como no original)
-  },
-})
+    // --- ADICIONE ESTE BLOCO ABAIXO PARA RESOLVER O ERRO ---
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    // Opcional: Aplica segurança globalmente na doc
+    security: [{ bearerAuth: [] }],
+  }, // Fecha openapi
+}); // Fecha o register
 
 // --- REGISTRO DE ROTAS ---
 await fastify.register(loginRoutes, { prefix: '/api/auth' })
