@@ -7,7 +7,7 @@ import {
   conversationListSchema,
   deleteConversationSchema,
 } from '../schemas/chatSchema.js'
-import {AudioController} from "..controllers/Audiocontroller.js";
+import {AudioController} from "../controllers/Audiocontroller.js";
 
 const chatRoutes = async (fastify: FastifyInstance) => {
   // POST /chat/message - Envia mensagem em conversa existente
