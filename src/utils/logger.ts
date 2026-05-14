@@ -18,57 +18,59 @@ export class Logger {
   }
 
   private formatLog(
-    level: string,
-    message: string,
-    metadata?: LogMetadata
+      level: string,
+      message: string,
+      metadata?: LogMetadata
   ): object {
     return {
       timestamp: new Date().toISOString(),
       level,
       message,
-      ...(metadata && { metadata }),
+      ...(metadata ? { metadata } : {}),
     }
   }
 
   info(message: string, metadata?: LogMetadata): void {
+    const log = this.formatLog('info', message, metadata)
+
     if (this.fastifyLogger) {
-      this.fastifyLogger.info(this.formatLog('info', message, metadata))
+      this.fastifyLogger.info(log)
     } else {
-      console.log(JSON.stringify(this.formatLog('info', message, metadata)))
+      console.log(JSON.stringify(log))
     }
   }
 
   warn(message: string, metadata?: LogMetadata): void {
+    const log = this.formatLog('warn', message, metadata)
+
     if (this.fastifyLogger) {
-      this.fastifyLogger.warn(this.formatLog('warn', message, metadata))
+      this.fastifyLogger.warn(log)
     } else {
-      console.warn(JSON.stringify(this.formatLog('warn', message, metadata)))
+      console.warn(JSON.stringify(log))
     }
   }
 
   error(message: string, error?: Error, metadata?: LogMetadata): void {
-    const errorMetadata = {
-      ...metadata,
+    const log = this.formatLog('error', message, {
+      ...(metadata ?? {}),
       error: error?.message,
       stack: error?.stack,
-    }
+    })
 
     if (this.fastifyLogger) {
-      this.fastifyLogger.error(
-        this.formatLog('error', message, errorMetadata)
-      )
+      this.fastifyLogger.error(log)
     } else {
-      console.error(
-        JSON.stringify(this.formatLog('error', message, errorMetadata))
-      )
+      console.error(JSON.stringify(log))
     }
   }
 
   debug(message: string, metadata?: LogMetadata): void {
+    const log = this.formatLog('debug', message, metadata)
+
     if (this.fastifyLogger) {
-      this.fastifyLogger.debug(this.formatLog('debug', message, metadata))
+      this.fastifyLogger.debug(log)
     } else {
-      console.debug(JSON.stringify(this.formatLog('debug', message, metadata)))
+      console.debug(JSON.stringify(log))
     }
   }
 }

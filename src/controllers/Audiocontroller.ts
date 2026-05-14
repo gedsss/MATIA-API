@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import '@fastify/multipart';
-import { AudioService } from "..services/AudioService.js";
+import { AudioService } from "../services/AudioService.js";
 
 export class AudioController {
 

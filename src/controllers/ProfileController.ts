@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { ProfileService } from '../services/ProfileService.js';
-import type { CreateUserDTO, UpdateUserDTO } from '../dtos/UserDTO.js';
+import { ProfileService } from '..//services/ProfileService.js';
+import type { CreateUserDTO, UpdateUserDTO } from '..//dtos/UserDTO.js';
 
 export class ProfileController {
 
