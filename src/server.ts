@@ -126,7 +126,7 @@ fastify.decorate('requireSuperAdmin', async function (request, reply) {
 // --- CONFIGURAÇÃO DE CORS (AJUSTADA PARA VPS) ---
 await fastify.register(cors, {
   origin: (origin, cb) => {
-    cb(null, true)
+    cb(null, origin || true)
   },
 
   credentials: true,
