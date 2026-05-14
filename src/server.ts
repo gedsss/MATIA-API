@@ -125,13 +125,20 @@ fastify.decorate('requireSuperAdmin', async function (request, reply) {
 
 // --- CONFIGURAÇÃO DE CORS (AJUSTADA PARA VPS) ---
 await fastify.register(cors, {
-  origin: (origin, cb) => {
-    cb(null, origin || true)
-  },
+  origin: [
+    'http://localhost:4200',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://103.204.193.6',
+    'http://103.204.193.6:80',
+    'http://103.204.193.6:42502',// Garantia para porta 80 explícita
+    'https://matia-legal-ai.vercel.app',
+    'https://www.matia.com.br',
+  ],
 
-  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
   maxAge: 86400,
 })
 

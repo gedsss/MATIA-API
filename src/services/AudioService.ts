@@ -30,7 +30,7 @@ export class AudioService {
             if (!texto) throw new Error('Falha na transcrição.');
 
             // B. Persistência no Banco (Histórico/Favoritos)
-            const saveResult = await ChatRepository.salvarMensagemAudio(
+            const saveResult = await ChatRepository.salvarMensagemTexto(
                 userId,
                 companyId,
                 texto,
@@ -39,7 +39,7 @@ export class AudioService {
 
             // C. Retorno completo para o Angular
             return {
-                text: saveResult.texto,
+                text: saveResult.conversationId,
                 conversationId: saveResult.conversationId
             };
 
