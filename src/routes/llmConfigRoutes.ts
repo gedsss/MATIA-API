@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { LlmConfigController } from '../controllers/LlmConfigController.js'
-import { createLlmConfigSchema, updateLlmConfigSchema, llmConfigParamsSchema } from '..schemas/llmConfigSchema.js'
+import { createLlmConfigSchema, updateLlmConfigSchema, llmConfigParamsSchema } from '..//schemas/llmConfigSchema.js'
 
 const llmConfigRoutes = async (fastify: FastifyInstance) => {
 

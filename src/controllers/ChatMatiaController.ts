@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { ChatService } from '..services/ChatService.js';
-import type { AskQuestionDTO } from "..dtos/ChatDTO.js";
+import { ChatService } from '../services/ChatService.js';
+import type { AskQuestionDTO } from "../dtos/ChatDTO.js";
 
 // Tipagem para o usuário que vem do seu middleware JWT
 interface JwtUser {

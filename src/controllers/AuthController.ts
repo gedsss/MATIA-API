@@ -1,5 +1,5 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { AuthService } from '..//services/AuthService.js';
+import { AuthService } from '../services/AuthService.js';
 import type { LoginRequestDTO } from '../dtos/AuthDTO.js';
 
 // 🌟 CONFIGURAÇÃO CORRIGIDA DO COOKIE

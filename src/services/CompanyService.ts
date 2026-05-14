@@ -1,16 +1,16 @@
-import { CompanyRepository } from "..repositories/CompanyRepository.js";
+import { CompanyRepository } from "../repositories/CompanyRepository.js";
 // 🌟 Importe os seus erros específicos
 import {
     UserNotFoundError,
     ConflictError,
     InternalServerError,
     DuplicateEmailError // Use este para e-mail duplicado!
-} from "..errors/errors.js";
-import { CompanyResponseDTO, CreateCompanyDTO, UpdateCompanyDTO } from "..dtos/CompanyDTO.js";
-import { CreateUserDTO } from "..dtos/UserDTO.js";
-import Company from "..models/company.js";
-import { UserRepository } from "..repositories/UserRepository.js";
-import sequelize from "..db.js";
+} from "../errors/errors.js";
+import { CompanyResponseDTO, CreateCompanyDTO, UpdateCompanyDTO } from "../dtos/CompanyDTO.js";
+import { CreateUserDTO } from "../dtos/UserDTO.js";
+import Company from "../models/company.js";
+import { UserRepository } from "../repositories/UserRepository.js";
+import sequelize from "../db.js";
 import bcrypt from "bcryptjs";
 import {ValidationError} from "sequelize";
 
