@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import QRCode from 'qrcode';
 import * as OTPAuth from 'otpauth';
-import Profile from "@/models/profile.js";
+import Profile from "../models/profile.js";
 import {MailService} from "@/services/MailService.js";
 import {Op} from "sequelize";
 

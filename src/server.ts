@@ -27,7 +27,7 @@ import documentsTagsRoutes from './routes/documents_tagsRoutes.js'
 import documentsRoutes from './routes/documentsRoutes.js'
 import messagesRoutes from './routes/messagesRoutes.js'
 import chatRoutes from './routes/chatRoutes.js'
-import chatMatiaRoutes from '@/routes/chatMatiaRoutes.js';
+import chatMatiaRoutes from './routes/chatMatiaRoutes.js';
 import companyRoutes from './routes/companyRoutes.js'
 import profileRoutes from './routes/profileRoutes.js'
 import userActivityLogsRoutes from './routes/user_activity_logRoutes.js'
@@ -38,7 +38,7 @@ import {
 import { helmetPlugin } from './plugins/helmet.js'
 import { cachePlugin } from './plugins/cachePlugin.js'
 import { setupAssociations } from "./models/setupAssociations.js";
-import llmConfigRoutes from "@/routes/llmConfigRoutes.js";
+import llmConfigRoutes from "./routes/llmConfigRoutes.js";
 
 const fastify: FastifyInstance = Fastify({
   logger: {
