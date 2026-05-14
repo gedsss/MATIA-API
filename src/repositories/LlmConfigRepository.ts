@@ -1,4 +1,4 @@
-import LlmConfig from '@/models/LlmConfig.js'
+import LlmConfig from '..models/LlmConfig.js'
 import type { CreateLlmConfigDTO, UpdateLlmConfigDTO } from '../dtos/LlmConfigDTO.js'
 
 export class LlmConfigRepository {

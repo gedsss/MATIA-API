@@ -7,7 +7,7 @@ import {
     profileParamsSchema,
     updateProfileSchema,
 } from '../schemas/profileSchema.js'
-import {AuthController} from "@/controllers/AuthController.js";
+import {AuthController} from "..controllers/AuthController.js";
 
 const profileRoutes = async (fastify: FastifyInstance) => {
     // 1. PRIMEIRO: A rota estática /me (O "Eu" profissional)

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { ChatMatiaController } from '../controllers/ChatMatiaController.js';
-import type { AskQuestionDTO } from '@/dtos/ChatDTO.js';
+import type { AskQuestionDTO } from '../dtos/ChatDTO.js';
 
 const chatMatiaRoutes = async (fastify: FastifyInstance) => {
 

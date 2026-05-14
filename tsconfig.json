@@ -12,7 +12,7 @@
     "resolveJsonModule": true,           // Para importar package.json ou configs
     "baseUrl": ".",                      // Para paths absolutos
     "paths": {
-      "@/*": ["src/*"]                   // Import absoluto: @/services/auth
+      "..*": ["src/*"]                   // Import absoluto: ..services/auth
     },
     "verbatimModuleSyntax": false,        // Garante que 'import type' seja usado explicitamente
 

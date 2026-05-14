@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
-import { LlmConfigService } from '@/services/LlmConfigService.js'
-import type { CreateLlmConfigDTO, UpdateLlmConfigDTO } from '@/dtos/LlmConfigDTO.js'
+import { LlmConfigService } from '..services/LlmConfigService.js'
+import type { CreateLlmConfigDTO, UpdateLlmConfigDTO } from '..dtos/LlmConfigDTO.js'
 
 export class LlmConfigController {
 

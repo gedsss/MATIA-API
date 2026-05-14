@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { UserRepository } from '@/repositories/UserRepository.js';
-import { CompanyRepository } from '@/repositories/CompanyRepository.js';
-import { LlmConfigRepository } from '@/repositories/LlmConfigRepository.js';
-import { ChatRepository } from '@/repositories/ChatRepository.js';
-import { UserNotFoundError, InternalServerError } from '@/errors/errors.js';
-import { AskQuestionDTO, ChatResponseDTO } from "@/dtos/ChatDTO.js";
+import { UserRepository } from '..repositories/UserRepository.js';
+import { CompanyRepository } from '..repositories/CompanyRepository.js';
+import { LlmConfigRepository } from '..repositories/LlmConfigRepository.js';
+import { ChatRepository } from '..repositories/ChatRepository.js';
+import { UserNotFoundError, InternalServerError } from '..errors/errors.js';
+import { AskQuestionDTO, ChatResponseDTO } from "..dtos/ChatDTO.js";
 import * as http from "node:http";
 import * as https from "node:https";
 

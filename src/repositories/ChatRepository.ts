@@ -1,5 +1,5 @@
-import Messages from "@/models/messages.js";
-import Conversation from "@/models/conversation.js";
+import Messages from "..models/messages.js";
+import Conversation from "..models/conversation.js";
 
 export class ChatRepository {
 

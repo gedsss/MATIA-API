@@ -1,7 +1,7 @@
-import { LlmConfigRepository } from '@/repositories/LlmConfigRepository.js'
-import { InternalServerError, UserNotFoundError } from '@/errors/errors.js' // Nota: Se tiver um "NotFoundError" genérico, seria melhor que UserNotFoundError aqui!
-import type { CreateLlmConfigDTO, UpdateLlmConfigDTO, LlmConfigResponseDTO } from '@/dtos/LlmConfigDTO.js'
-import LlmConfig from '@/models/LlmConfig.js'
+import { LlmConfigRepository } from '..repositories/LlmConfigRepository.js'
+import { InternalServerError, UserNotFoundError } from '..errors/errors.js' // Nota: Se tiver um "NotFoundError" genérico, seria melhor que UserNotFoundError aqui!
+import type { CreateLlmConfigDTO, UpdateLlmConfigDTO, LlmConfigResponseDTO } from '..dtos/LlmConfigDTO.js'
+import LlmConfig from '..models/LlmConfig.js'
 
 export class LlmConfigService {
 
