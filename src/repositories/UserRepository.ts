@@ -60,7 +60,7 @@ export class UserRepository {
         });
     }
 
-    // 3. 🌟 UPDATE INTELIGENTE
+    // 3.UPDATE INTELIGENTE
     static async update(id: string, role: string, empresaId: string | null, data: UpdateUserDTO): Promise<Profile | null> {
         const updatePayload: any = { ...data };
 
