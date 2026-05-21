@@ -124,7 +124,7 @@ Profile.init(
         },
         telefone: {
             type: DataTypes.STRING(15),
-            allowNull: false,
+            allowNull: true,
             unique: true,
         },
         data_nascimento: {

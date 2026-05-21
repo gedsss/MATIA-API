@@ -48,6 +48,7 @@ export class UserRepository {
 
         const profileData = {
             ...data,
+            telefone: data.telefone?.trim() || null,
             data_nascimento: dataNascimento,
             profile_password: data.profile_password,
             empresa_id: data.empresa_id
@@ -65,6 +66,9 @@ export class UserRepository {
 
         if (data.data_nascimento) {
             updatePayload.data_nascimento = new Date(data.data_nascimento);
+        }
+        if ('telefone' in data) {
+            updatePayload.telefone = data.telefone?.trim() || null;
         }
 
         const queryWhere: any = { id };
