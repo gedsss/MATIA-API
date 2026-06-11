@@ -4,6 +4,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import swagger from '@fastify/swagger'
 import fastifyEnv from '@fastify/env'
 import cookie from '@fastify/cookie';
+import multipart from '@fastify/multipart';
 import { rateLimitPlugin } from './plugins/ratelimit.js'
 import authenticate from './plugins/authPlugin.js'
 import swaggerUi from '@fastify/swagger-ui'
@@ -104,6 +105,7 @@ await fastify.register(cookie, {
   hook: 'onRequest'
 })
 
+await fastify.register(multipart)
 await fastify.register(helmetPlugin)
 await fastify.register(cachePlugin)
 await fastify.register(rateLimitPlugin)

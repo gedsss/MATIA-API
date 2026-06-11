@@ -13,12 +13,13 @@ export interface DocumentsAttributes {
   progress: number | null
   uploaded_at: Date
   processed_at: Date | null
+  rag_document_id: string | null
 }
 
 export interface DocumentsCreationAttributes
   extends Optional<
     DocumentsAttributes,
-    'status' | 'progress' | 'id' | 'processed_at' | 'uploaded_at'
+    'status' | 'progress' | 'id' | 'processed_at' | 'uploaded_at' | 'rag_document_id'
   > {}
 
 class Documents
@@ -35,6 +36,7 @@ class Documents
   public progress!: number | null
   public uploaded_at!: Date
   public processed_at!: Date | null
+  public rag_document_id!: string | null
 }
 
 Documents.init(
@@ -87,6 +89,10 @@ Documents.init(
     },
     processed_at: {
       type: DataTypes.DATE,
+      allowNull: true,
+    },
+    rag_document_id: {
+      type: DataTypes.UUID,
       allowNull: true,
     },
   },

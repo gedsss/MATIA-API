@@ -47,7 +47,8 @@ export class ChatService {
             );
 
             // 5. Disparar a requisição para o motor RAG em Python
-            const pythonResponse = await axios.post('http://103.204.193.6:4001/ask', {
+            const ragUrl = process.env['RAG_API_URL'] ?? 'http://localhost:8001';
+            const pythonResponse = await axios.post(`${ragUrl}/ask`, {
                 question: dto.question,
                 user_id: userId,
                 company_id: companyId || "matia-super-admin",

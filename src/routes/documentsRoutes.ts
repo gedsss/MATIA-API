@@ -9,6 +9,20 @@ import {
 } from '../schemas/documentsSchema.js'
 
 const documentsRoutes = async (fastify: FastifyInstance) => {
+  // UPLOAD + INGEST no RAG - Qualquer usuário autenticado
+  fastify.post(
+    '/upload',
+    {
+      schema: {
+        tags: ['Documents'],
+        summary: 'Faz upload de um arquivo e o ingere no RAG',
+        consumes: ['multipart/form-data'],
+      },
+      preHandler: [fastify.authenticate],
+    },
+    documentsController.uploadDocument
+  )
+
   // CREATE - Apenas admin pode criar documentos
   fastify.post(
     '/',

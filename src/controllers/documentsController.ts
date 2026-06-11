@@ -11,6 +11,7 @@ import {
 import { ErrorCodes } from '../errors/errorCodes.js'
 import { successResponse } from '../utils/response.js'
 import cacheService from '../utils/cache.js'
+import { uploadAndIngest } from '../services/DocumentService.js'
 
 interface CreateBody
   extends Omit<DocumentsAttributes, 'id' | 'created_at' | 'updated_at'> {}
@@ -133,9 +134,29 @@ export const deleteDocuments = async (request: FastifyRequest) => {
   }
 }
 
+export const uploadDocument = async (request: FastifyRequest) => {
+  const user = request.user as { id: string; empresa_id?: string; role?: string }
+  const data = await request.file()
+  if (!data) throw new MissingFieldError()
+
+  const companyId = user.empresa_id ?? 'matia-super-admin'
+  const buffer = await data.toBuffer()
+
+  await cacheService.invalidatePrefix('documents:')
+
+  const result = await uploadAndIngest(user.id, companyId, {
+    filename: data.filename,
+    mimetype: data.mimetype,
+    data: buffer,
+  })
+
+  return successResponse(result, 'Documento enviado e processado com sucesso')
+}
+
 export default {
   createDocuments,
   getDocumentsById,
   updateDocuments,
   deleteDocuments,
+  uploadDocument,
 }
