@@ -21,7 +21,7 @@ const documentsRoutes = async (fastify: FastifyInstance) => {
           required: ['question'],
           properties: {
             question: { type: 'string' },
-            document_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+            document_ids: { type: 'array', items: { type: 'string' } },
           },
         },
       },
