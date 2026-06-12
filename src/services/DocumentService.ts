@@ -67,6 +67,14 @@ export interface AskDocumentResult {
   confidence?: number
   validation_status?: string
   risk_level?: string
+  usage?: {
+    llm: { input_tokens: number; output_tokens: number; total_tokens: number }
+    embedding?: { total_tokens: number }
+  }
+  cost?: {
+    total: { usd: number; brl: number }
+    exchange_rate?: { usd_brl: number }
+  }
 }
 
 export async function askDocument(
@@ -94,13 +102,15 @@ export async function askDocument(
       { headers: { 'X-API-Key': process.env.MATIA_RAG_API_KEY } }
     )
 
-    const data = response.data as AskDocumentResult
+    const data = response.data as AskDocumentResult & { metadata?: { usage?: AskDocumentResult['usage']; cost?: AskDocumentResult['cost'] } }
     return {
       answer: data.answer,
       sources: data.sources ?? [],
       confidence: data.confidence,
       validation_status: data.validation_status,
       risk_level: data.risk_level,
+      usage: data.metadata?.usage,
+      cost: data.metadata?.cost,
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
