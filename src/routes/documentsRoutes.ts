@@ -9,6 +9,27 @@ import {
 } from '../schemas/documentsSchema.js'
 
 const documentsRoutes = async (fastify: FastifyInstance) => {
+  // ASK - Pergunta sobre documento(s) indexados no RAG
+  fastify.post(
+    '/ask',
+    {
+      schema: {
+        tags: ['Documents'],
+        summary: 'Faz uma pergunta sobre documentos indexados no RAG',
+        body: {
+          type: 'object',
+          required: ['question'],
+          properties: {
+            question: { type: 'string' },
+            document_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+          },
+        },
+      },
+      preHandler: [fastify.authenticate],
+    },
+    documentsController.askDocumentController
+  )
+
   // UPLOAD + INGEST no RAG - Qualquer usuário autenticado
   fastify.post(
     '/upload',

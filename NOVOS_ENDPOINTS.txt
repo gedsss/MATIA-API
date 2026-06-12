@@ -1,0 +1,156 @@
+POST /api/documents/upload
+=========================
+
+Autenticação: Authorization: Bearer <JWT>
+Content-Type: multipart/form-data
+
+Campo do form:
+  file  (File, obrigatório)  —  Arquivo a ser enviado (.txt, .pdf, .png, .jpg, .jpeg)
+
+
+Resposta de sucesso 200:
+------------------------
+{
+  "success": true,
+  "data": {
+    "id": "c3c77f7a-fe51-43e8-8e48-6afccef7f9aa",
+    "rag_document_id": "9dff849d-1b1d-49a3-a28e-e8ef855038d6",
+    "original_name": "test-doc.txt",
+    "file_type": "text/plain",
+    "file_size": 67,
+    "status": "completo",
+    "chunks_created": 1
+  },
+  "message": "Documento enviado e processado com sucesso"
+}
+
+Campos retornados:
+  id               UUID do documento no banco do matia-api
+  rag_document_id  UUID do documento indexado no RAG (usar para /documents/ask futuramente)
+  status           "completo" ou "erro"
+  chunks_created   Quantos chunks o RAG gerou do arquivo
+
+
+Resposta de erro 500 (RAG indisponível ou falha no processamento):
+------------------------------------------------------------------
+{
+  "success": false,
+  "error": {
+    "code": "ERR_8000",
+    "message": "Falha ao processar o documento no RAG.",
+    "statusCode": 500,
+    "details": {
+      "originalError": "connect ECONNREFUSED ..."
+    }
+  }
+}
+
+
+Resposta de erro 401 (sem token ou token inválido):
+---------------------------------------------------
+{
+  "message": "Acesso negado: Token inválido ou expirado."
+}
+
+
+Exemplo Angular:
+---------------
+uploadDocument(file: File): Observable<any> {
+  const form = new FormData();
+  form.append('file', file);
+
+  return this.http.post('/api/documents/upload', form);
+}
+
+IMPORTANTE: O Content-Type nao deve ser setado manualmente —
+o browser define automaticamente o boundary do multipart.
+
+
+========================================================
+
+
+POST /api/documents/ask
+========================
+
+Autenticação: Authorization: Bearer <JWT>
+Content-Type: application/json
+
+Payload:
+  question      (string, obrigatório)   —  Pergunta sobre o(s) documento(s)
+  document_ids  (string[], opcional)    —  Lista de UUIDs dos documentos a consultar
+                                           (rag_document_id retornado pelo /upload)
+                                           Se omitido, consulta todos os documentos da empresa
+
+O ia, ia_model e client_api_key são preenchidos automaticamente pelo servidor
+a partir da configuração de IA cadastrada no banco.
+
+
+Resposta de sucesso 200:
+------------------------
+{
+  "success": true,
+  "data": {
+    "answer": "O documento trata de...",
+    "sources": [
+      {
+        "document_id": "9dff849d-1b1d-49a3-a28e-e8ef855038d6",
+        "chunk_id": "00000000-0000-0000-0000-000000000001",
+        "filename": "contrato.pdf",
+        "trecho": "Trecho usado como fonte.",
+        "score": 0.82
+      }
+    ],
+    "confidence": 0.78,
+    "validation_status": "aprovada",
+    "risk_level": "medio"
+  },
+  "message": "Resposta gerada com sucesso"
+}
+
+
+Resposta de erro 500 (RAG indisponível ou falha de IA):
+-------------------------------------------------------
+{
+  "success": false,
+  "error": {
+    "code": "ERR_8000",
+    "message": "Falha ao consultar o documento no RAG.",
+    "statusCode": 500,
+    "details": {
+      "originalError": "Request failed with status code 401"
+    }
+  }
+}
+
+
+Resposta de erro 401 (sem token ou token inválido):
+---------------------------------------------------
+{
+  "message": "Acesso negado: Token inválido ou expirado."
+}
+
+
+Exemplo Angular (fluxo completo upload → pergunta):
+----------------------------------------------------
+// 1. Upload do arquivo
+uploadDocument(file: File): Observable<any> {
+  const form = new FormData();
+  form.append('file', file);
+  return this.http.post('/api/documents/upload', form);
+}
+
+// 2. Pergunta sobre o documento
+askDocument(question: string, documentIds: string[]): Observable<any> {
+  return this.http.post('/api/documents/ask', {
+    question,
+    document_ids: documentIds
+  });
+}
+
+// Uso:
+this.uploadDocument(file).subscribe(res => {
+  const ragId = res.data.rag_document_id;
+  this.askDocument('O que diz esse documento?', [ragId]).subscribe(answer => {
+    console.log(answer.data.answer);
+  });
+});

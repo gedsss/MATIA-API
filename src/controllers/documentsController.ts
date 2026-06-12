@@ -11,7 +11,7 @@ import {
 import { ErrorCodes } from '../errors/errorCodes.js'
 import { successResponse } from '../utils/response.js'
 import cacheService from '../utils/cache.js'
-import { uploadAndIngest } from '../services/DocumentService.js'
+import { askDocument, uploadAndIngest } from '../services/DocumentService.js'
 
 interface CreateBody
   extends Omit<DocumentsAttributes, 'id' | 'created_at' | 'updated_at'> {}
@@ -153,10 +153,23 @@ export const uploadDocument = async (request: FastifyRequest) => {
   return successResponse(result, 'Documento enviado e processado com sucesso')
 }
 
+export const askDocumentController = async (request: FastifyRequest) => {
+  const user = request.user as { id: string; empresa_id?: string; role?: string }
+  const { question, document_ids } = request.body as { question: string; document_ids?: string[] }
+
+  if (!question) throw new MissingFieldError()
+
+  const companyId = user.empresa_id ?? 'matia-super-admin'
+  const result = await askDocument(companyId, question, document_ids)
+
+  return successResponse(result, 'Resposta gerada com sucesso')
+}
+
 export default {
   createDocuments,
   getDocumentsById,
   updateDocuments,
   deleteDocuments,
   uploadDocument,
+  askDocumentController,
 }
