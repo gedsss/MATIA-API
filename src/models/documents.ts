@@ -26,17 +26,17 @@ class Documents
   extends Model<DocumentsAttributes, DocumentsCreationAttributes>
   implements DocumentsAttributes
 {
-  public id!: string
-  public user_id!: string
-  public original_name!: string
-  public storage_path!: string
-  public file_type!: string
-  public file_size!: number
-  public status!: 'enviando' | 'processando' | 'completo' | 'erro' | null
-  public progress!: number | null
-  public uploaded_at!: Date
-  public processed_at!: Date | null
-  public rag_document_id!: string | null
+  declare id: string
+  declare user_id: string
+  declare original_name: string
+  declare storage_path: string
+  declare file_type: string
+  declare file_size: number
+  declare status: 'enviando' | 'processando' | 'completo' | 'erro' | null
+  declare progress: number | null
+  declare uploaded_at: Date
+  declare processed_at: Date | null
+  declare rag_document_id: string | null
 }
 
 Documents.init(
